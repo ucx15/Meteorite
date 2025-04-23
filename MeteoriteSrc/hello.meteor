@@ -12,11 +12,13 @@ main () : i8 {
 	f : i8 = a / b; // division of a and b
 
 	kekw : i8 = !(5*a);
-	c == d;
-	e != f;
 
 	e < f;
-	d >c;
+	d > c;
+
+//	c == d;
+//	e != f;
+
 
 	print("a = ");
 //	println(a);

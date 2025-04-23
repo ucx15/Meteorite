@@ -28,20 +28,19 @@ foreach ($src_file in $Src_Files) {
 		$isModified = $true
 
 		# check if the source file is modified
+
 		if ( Test-Path "Obj/${src_file}.o" ) {
 			$sourceModifiedDate = (Get-Item "Src/${src_file}.cpp").LastWriteTime
 			$targetModifiedDate = (Get-Item "Obj/${src_file}.o").LastWriteTime
 			$isModified = ($sourceModifiedDate -gt $targetModifiedDate)
 		}
 
-
 		# compile if source file is modified
 		if (($isModified -eq $true) -or ($Build_All -eq $true)) {
-			Write-Output "${src_file}.cpp"
+			Write-Output "${src_file}.cpp    ${sourceModifiedDate}"
 
 			# remove previous 'obj' file
 			Remove-Item Obj/${src_file}.o  -Force -ErrorAction SilentlyContinue
-
 			g++ $Compiler_Flags -I $Include_Path -c Src/${src_file}.cpp -o Obj/${src_file}.o
 
 			# checking if compilation was successful
@@ -65,4 +64,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # runs the linked executable
-./MeteoriteVM.exe .\MeteoriteSrc\hello.meteor
+& ./${Target}.exe .\MeteoriteSrc\hello.meteor

@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-
+#include <unordered_map>
 
 #include "lexer.hpp"
 #include "token.hpp"
@@ -190,14 +190,34 @@ void Lexer::tokenize() {
 	size_t i = 0;
 	std::string word = "";
 
+	//TODO: move these maps to a token class or somewhere appropriate
+
+	static const std::unordered_map<char, TokenType> delimiterMap = {
+		{'(', TokenType::OPEN_PAREN},
+		{')', TokenType::CLOSE_PAREN},
+		{'{', TokenType::OPEN_CURLY},
+		{'}', TokenType::CLOSE_CURLY},
+		{':', TokenType::COLON},
+		{';', TokenType::SEMICOLON},
+	};
+
+	static const std::unordered_map<char, TokenType> operatorMap = {
+		{'+', TokenType::PLUS},
+		{'-', TokenType::MINUS},
+		{'*', TokenType::MULTIPLY},
+		{'/', TokenType::DIVIDE},
+		{'%', TokenType::PERCENT},
+		{'&', TokenType::AMPERSAND},
+		{'<', TokenType::LESS_THAN},
+		{'>', TokenType::GREATER_THAN},
+		{'=', TokenType::EQUAL},
+		{'!', TokenType::NOT},
+	};
+
+
 	while (i < m_rawData.length()) {
 		const char c = m_rawData[i];
 		i++;
-
-		// std::cout << "\n[ " << c << " ]\t";
-
-
-		bool matchedWord = false;
 
 		bool matchedWhiteSpace = false;
 		bool matchedDelim = false;
@@ -208,7 +228,7 @@ void Lexer::tokenize() {
 
 		// ----------- Matchhing WhiteSpace -----------
 		if ( (c == ' ') || (c == '\t') || (c == '\n') ) {
-			matchedWord = matchWord(word);
+			matchWord(word);
 			matchedWhiteSpace = true;
 		}
 
@@ -247,59 +267,15 @@ void Lexer::tokenize() {
 
 		// ----------- Matching Delimiters -----------
 		if ( !matchedComment ) {
-			Token delimterToken;
 
-			switch (c) {
-				case '(' : {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::OPEN_PAREN, "(");
-					matchedDelim = true;
-					break;
-				}
+			if ( delimiterMap.contains(c) ) {
+				matchWord(word);
+				m_tokens.push_back(
+					Token(delimiterMap.at(c), std::string(1, c))
+				);
 
-				case ')': {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::CLOSE_PAREN, ")");
-					matchedDelim = true;
-					break;
-				}
-
-				case '{': {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::OPEN_CURLY, "{");
-					matchedDelim = true;
-					break;
-				}
-
-				case '}': {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::CLOSE_CURLY, "}");
-					matchedDelim = true;
-					break;
-				}
-
-				case ':': {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::COLON, ":");
-					matchedDelim = true;
-					break;
-				}
-
-				case ';': {
-					matchedWord = matchWord(word);
-					delimterToken = Token(TokenType::SEMICOLON, ";");
-					matchedDelim = true;
-					break;
-				}
-
-				default:
-					matchedDelim = false;
+				matchedDelim = true;
 			}
-
-			if ( matchedDelim ) {
-				m_tokens.push_back(delimterToken);
-			}
-
 		}
 
 
@@ -307,133 +283,17 @@ void Lexer::tokenize() {
 		if ( !matchedDelim && !matchedComment ) {
 
 			// TODO: Support multiwide character operators like <=, >= +=, -= ,etc.
-			Token operatorToken;
 
-			switch (c) {
+			if ( operatorMap.contains(c) ) {
+				matchWord(word);
 
-				case '+': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::PLUS, "+");
-					matchedOperator = true;
-					break;
-				}
-
-				case '-': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::MINUS, "-");
-					matchedOperator = true;
-					break;
-				}
-
-				case '*': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::MULTIPLY, "*");
-					matchedOperator = true;
-					break;
-				}
-
-				case '/': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::DIVIDE, "/");
-					matchedOperator = true;
-					break;
-				}
-
-				case '%': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::PERCENT, "%");
-					matchedOperator = true;
-					break;
-				}
-
-				case '&': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::AMPERSAND, "&");
-					matchedOperator = true;
-					break;
-				}
-
-				case '<': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::LESS_THAN, "<");
-					matchedOperator = true;
-					break;
-				}
-
-				case '>': {
-					matchedWord = matchWord(word);
-					operatorToken = Token(TokenType::GREATER_THAN, ">");
-					matchedOperator = true;
-					break;
-				}
-
-				case '=': {
-					matchedWord = matchWord(word);
-					matchedOperator = true;
-
-					// == Case - Multiwide Character
-					if (m_rawData[i] == '=') {
-						i++;
-						operatorToken = Token(TokenType::EQUAL_EQUAL, "==");
-					}
-					else {
-						operatorToken = Token(TokenType::EQUAL, "=");
-					}
-					break;
-
-				}
-
-				case '!': {
-					matchedWord = matchWord(word);
-					matchedOperator = true;
-
-					// != Case - Multiwide Character
-					if (m_rawData[i] == '=') {
-						i++;
-						operatorToken = Token(TokenType::NOT_EQUAL, "!=");
-					}
-					else {
-						operatorToken = Token(TokenType::NOT, "!");
-					}
-					break;
-				}
-
-				default:
-					matchedOperator = false;
-			}
-
-			if ( matchedOperator ) {
-				m_tokens.push_back(operatorToken);
+				m_tokens.push_back(
+					Token(operatorMap.at(c), std::string(1, c))
+				);
+				matchedOperator = true;
 			}
 		}
 
-
-		// Printers
-		(void) matchedWord;
-		/*
-
-		if ( matchedWord ) {
-			std::cout << '<'<< word << ">  <- matched Word";
-		}
-
-		if ( matchedDelim ) {
-			std::cout << "  <- matched Delim\n";
-		}
-
-		if ( matchedStringLiteral ) {
-			std::cout << '"'<< word << "\" <-- matched String Literal \n";
-		}
-
-		if ( matchedOperator ) {
-			std::cout << "  <- matched Operator\n";
-		}
-
-		if ( matchedComment ) {
-			std::cout << '<' << word << "> <- Matched Comment\n";
-		}
-
-
-		*/
 
 		// Cleaners
 		// if Delimiter or WhiteSpace or Word is matched
@@ -445,10 +305,7 @@ void Lexer::tokenize() {
 
 		// Append 'c' to 'word'
 		word += c;
-		// std::cout << "{" << word << "}";
 	}
-
-	// std::cout << std::endl;
 
 	// EOF Token
 	m_tokens.push_back(
