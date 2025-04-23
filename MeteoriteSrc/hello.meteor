@@ -1,0 +1,31 @@
+main () : i8 {
+
+	println("Hello from Meteorite!");
+
+	w : f64 = 3.14;
+
+	a : i8 = 5;
+	b : i8 = 10;
+	c : i8 = a + b; // sum of a and b
+	d : i8 = a - b; // difference of a and b
+	e : i8 = a * b; // product of a and b
+	f : i8 = a / b; // division of a and b
+
+	kekw : i8 = !(5*a);
+	c == d;
+	e != f;
+
+	e < f;
+	d >c;
+
+	print("a = ");
+//	println(a);
+
+	print("b = ");
+//	println(b);
+
+	print("c = ");
+//	println(c);
+
+	return 0;
+}
