@@ -102,16 +102,6 @@ bool Lexer::isDecimalLiteral(const std::string& s) {
 bool Lexer::matchWord(std::string &word) {
 	// Handles identifiers, literals, keywords, types, builtins
 
-	const std::vector<std::string> KEYWORDS = {"return"};
-
-	const std::vector<std::string> TYPES = {
-		"i8", "i16", "i32", "i64",
-		"u8", "u16", "u32", "u64",
-		"f32", "f64"
-	};
-
-	const std::vector<std::string> BUILTINS = {"print", "println"};
-
 	// Types
 	for (const std::string &type: TYPES) {
 		if (word == type) {
@@ -189,31 +179,6 @@ void Lexer::tokenize() {
 
 	size_t i = 0;
 	std::string word = "";
-
-	//TODO: move these maps to a token class or somewhere appropriate
-
-	static const std::unordered_map<char, TokenType> delimiterMap = {
-		{'(', TokenType::OPEN_PAREN},
-		{')', TokenType::CLOSE_PAREN},
-		{'{', TokenType::OPEN_CURLY},
-		{'}', TokenType::CLOSE_CURLY},
-		{':', TokenType::COLON},
-		{';', TokenType::SEMICOLON},
-	};
-
-	static const std::unordered_map<char, TokenType> operatorMap = {
-		{'+', TokenType::PLUS},
-		{'-', TokenType::MINUS},
-		{'*', TokenType::MULTIPLY},
-		{'/', TokenType::DIVIDE},
-		{'%', TokenType::PERCENT},
-		{'&', TokenType::AMPERSAND},
-		{'<', TokenType::LESS_THAN},
-		{'>', TokenType::GREATER_THAN},
-		{'=', TokenType::EQUAL},
-		{'!', TokenType::NOT},
-	};
-
 
 	while (i < m_rawData.length()) {
 		const char c = m_rawData[i];

@@ -1,7 +1,7 @@
 $Target = "MeteoriteCC"
 
-# $Linker_Flags = "-static-libgcc -static-libstdc++ -static -Wl,--enable-auto-import -Wl,--enable-stdcall-fixup -Wl,--export-all-symbols -Wl,--out-implib,lib$Target.a -Wl,--whole-archive"
 
+# Compiler and Linker flags
 $Compiler_Flags = "-std=c++20", "-Wall", "-Wextra", "-Werror", "-Wpedantic", "-Wshadow", "-O2"
 $Linker_Flags = "-s"
 
