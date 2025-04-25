@@ -7,21 +7,22 @@
 int main(int argc, char* argv[]) {
 	// Handling commandline args
 	if (argc != 2) {
-		std::cerr << "Usage: MeteoriteVM <Source File>" << std::endl;
+		std::cerr << "Input file not provided\n";
+		std::cerr << "Usage: meteoritecc <Source File>\n";
 		return EXIT_FAILURE;
 	}
 
 	std::string sourceFile = argv[1];
-	std::cout << "Source file: " << sourceFile << std::endl;
 
-
+	// Lexical Analysis
 	Lexer lexer(sourceFile);
 
-	lexer.readFile();
-	lexer.tokenize();
+	if ( !lexer.analyzeSource() ) {
+		return EXIT_FAILURE;
+	}
 
 	lexer.printTokens();
-
+	lexer.clearSource();
 
 	return EXIT_SUCCESS;
 }

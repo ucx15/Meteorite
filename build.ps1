@@ -1,4 +1,5 @@
 $Target = "MeteoriteCC"
+$Test_File = "./MeteoriteSrc/hello.meteor"
 
 
 # Compiler and Linker flags
@@ -64,4 +65,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # runs the linked executable
-& ./${Target}.exe .\MeteoriteSrc\hello.meteor
+& ./${Target}.exe $Test_File

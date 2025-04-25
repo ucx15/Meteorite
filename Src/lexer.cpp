@@ -11,38 +11,30 @@
 
 
 // ctors & dtors
-Lexer::Lexer(const std::string filePath): m_sourceFile(filePath) {}
+Lexer::Lexer(const std::string sourceFile): sourceFile_(sourceFile) {}
 
 Lexer::~Lexer() {
-	this->clear();
-
-	(void)m_sourceFile;
-	(void)m_rawData;
+	clearSource();
 }
 
 
-// methods
-void Lexer::readFile() {
-	std::fstream file(m_sourceFile);
+// Private methods
+bool Lexer::readFile() {
+	std::cout << "Source file: " << sourceFile_ << "\n\n";
+
+	std::ifstream file(sourceFile_, std::ios::in);
+	if ( ! file.is_open() ) {
+		std::cerr << "LEXER:  File '" << sourceFile_ << "' not found or cannot be opened.\n";
+		return false;
+	}
+
 	std::ostringstream buffer;
 
 	buffer << file.rdbuf();
-	m_rawData = buffer.str();
+	rawData_ = buffer.str();
 
 	file.close();
-}
-
-void Lexer::printTokens() {
-	for (const Token &t: m_tokens) {
-		std::cout << t << '\n';
-	}
-}
-
-
-void Lexer::clear() {
-	m_sourceFile.clear();
-	m_rawData.clear();
-
+	return true;
 }
 
 
@@ -105,7 +97,7 @@ bool Lexer::matchWord(std::string &word) {
 	// Types
 	for (const std::string &type: TYPES) {
 		if (word == type) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::TYPE, type)
 			);
 			return true;
@@ -115,7 +107,7 @@ bool Lexer::matchWord(std::string &word) {
 	// Keywords
 	for (const std::string &keyword: KEYWORDS) {
 		if (word == keyword) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::KEYWORD, keyword)
 			);
 			return true;
@@ -125,7 +117,7 @@ bool Lexer::matchWord(std::string &word) {
 	// Builtins
 	for (const std::string &fn: BUILTINS) {
 		if (word == fn) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::BUILTIN_FN, fn)
 			);
 			return true;
@@ -134,7 +126,7 @@ bool Lexer::matchWord(std::string &word) {
 
 	// main fn
 	if (word == "main") {
-		m_tokens.push_back(
+		tokens_.push_back(
 			Token(TokenType::MAIN_FN, "main()")
 		);
 		return true;
@@ -145,28 +137,28 @@ bool Lexer::matchWord(std::string &word) {
 	if ( !word.empty() ) {
 
 		if (isIntegerLiteral(word)) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::INTEGER_LITERAL, word)
 			);
 			return true;
 		}
 
 		else if (isDecimalLiteral(word)) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::DECIMAL_LITERAL, word)
 			);
 			return true;
 		}
 
 		else if (isIdentifier(word)) {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::IDENTIFIER, word)
 			);
 			return true;
 		}
 
 		else {
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::TOKEN_UNKNOWN, word)
 			);
 		}
@@ -180,8 +172,8 @@ void Lexer::tokenize() {
 	size_t i = 0;
 	std::string word = "";
 
-	while (i < m_rawData.length()) {
-		const char c = m_rawData[i];
+	while (i < rawData_.length()) {
+		const char c = rawData_[i];
 		i++;
 
 		bool matchedWhiteSpace = false;
@@ -202,13 +194,13 @@ void Lexer::tokenize() {
 		else if ( c == '"' ) {
 			// TODO: handle escaped characters
 
-			char strChr = m_rawData[i];
+			char strChr = rawData_[i];
 			while (strChr != '"') {
 				word += strChr;
-				strChr = m_rawData[++i];
+				strChr = rawData_[++i];
 			}
 
-			m_tokens.push_back(
+			tokens_.push_back(
 				Token(TokenType::STRING_LITERAL, word)
 			);
 			matchedStringLiteral = true;
@@ -218,12 +210,12 @@ void Lexer::tokenize() {
 
 		// ----------- Matching Comments -----------
 		else if ( !matchedStringLiteral && c == '/' ) {
-			char cNxt = m_rawData[i];
+			char cNxt = rawData_[i];
 			if (cNxt == '/') {
 
 				while (cNxt != '\n') {
 					word += cNxt;
-					cNxt = m_rawData[i++];
+					cNxt = rawData_[i++];
 				}
 				matchedComment = true;
 			}
@@ -235,7 +227,7 @@ void Lexer::tokenize() {
 
 			if ( delimiterMap.contains(c) ) {
 				matchWord(word);
-				m_tokens.push_back(
+				tokens_.push_back(
 					Token(delimiterMap.at(c), std::string(1, c))
 				);
 
@@ -252,7 +244,7 @@ void Lexer::tokenize() {
 			if ( operatorMap.contains(c) ) {
 				matchWord(word);
 
-				m_tokens.push_back(
+				tokens_.push_back(
 					Token(operatorMap.at(c), std::string(1, c))
 				);
 				matchedOperator = true;
@@ -273,7 +265,34 @@ void Lexer::tokenize() {
 	}
 
 	// EOF Token
-	m_tokens.push_back(
+	tokens_.push_back(
 		Token(TokenType::TOKEN_EOF, "")
 	);
+}
+
+
+// Exposed Method
+bool Lexer::analyzeSource() {
+	if (!readFile()) {
+		std::cerr << "LEXER:  Unable to analyze provided source file.\n";
+		return false;
+	}
+
+	tokenize();
+
+	return true;
+}
+
+
+void Lexer::printTokens() {
+	for (const Token &t: tokens_) {
+		std::cout << t << '\n';
+	}
+}
+
+
+void Lexer::clearSource() {
+	sourceFile_.clear();
+	rawData_.clear();
+
 }

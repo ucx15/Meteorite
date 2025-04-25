@@ -7,21 +7,23 @@
 
 
 class Lexer {
+
 	private:
-	std::string m_sourceFile;
-	std::string m_rawData;
-	std::vector<Token> m_tokens;
+	std::string sourceFile_;
+	std::string rawData_;
+	std::vector<Token> tokens_;
 
 	public:
 
 	// ctors & dtors
-	Lexer(const std::string filePath);
+	Lexer(const std::string sourceFile);
 	~Lexer();
 
-	// methods
-	void clear();
 
-	void readFile();
+	// Private Methods
+	private:
+
+	bool readFile();
 
 	bool isIdentifier(const std::string& s);
 	bool isIntegerLiteral(const std::string& s);
@@ -30,5 +32,9 @@ class Lexer {
 	bool matchWord(std::string &word);
 	void tokenize();
 
+	// Exposed Methods
+	public:
+	bool analyzeSource();
+	void clearSource();
 	void printTokens();
 };
