@@ -95,33 +95,27 @@ bool Lexer::matchWord(std::string &word) {
 	// Handles identifiers, literals, keywords, types, builtins
 
 	// Types
-	for (const std::string &type: TYPES) {
-		if (word == type) {
-			tokens_.push_back(
-				Token(TokenType::TYPE, type)
-			);
-			return true;
-		}
+	if (std::find(TYPES.begin(), TYPES.end(), word) != TYPES.end()) {
+		tokens_.push_back(
+			Token(TokenType::TYPE, word)
+		);
+		return true;
 	}
 
 	// Keywords
-	for (const std::string &keyword: KEYWORDS) {
-		if (word == keyword) {
-			tokens_.push_back(
-				Token(TokenType::KEYWORD, keyword)
-			);
-			return true;
-		}
+	if (std::find(KEYWORDS.begin(), KEYWORDS.end(), word) != KEYWORDS.end()) {
+		tokens_.push_back(
+			Token(TokenType::KEYWORD, word)
+		);
+		return true;
 	}
 
 	// Builtins
-	for (const std::string &fn: BUILTINS) {
-		if (word == fn) {
-			tokens_.push_back(
-				Token(TokenType::BUILTIN_FN, fn)
-			);
-			return true;
-		}
+	if (std::find(BUILTINS.begin(), BUILTINS.end(), word) != BUILTINS.end()) {
+		tokens_.push_back(
+			Token(TokenType::BUILTIN_FN, word)
+		);
+		return true;
 	}
 
 	// main fn
